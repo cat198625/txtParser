@@ -1,0 +1,38 @@
+2. Написать SQL запросы, возвращающие набор данных, соответствующий следующим условиям:
+a. Выбрать имена (name) всех клиентов, которые не делали заказы в последние 7 дней.
+SELECT c2.name FROM orders o2
+	left join clients c2 on o2.customer_id = c2.id
+	group by o2.customer_id
+	having max(o2.order_date) < DATE_ADD(CURDATE(), INTERVAL - 7 DAY)
+union all
+select c1.name
+	from clients c1
+	left join orders o1 on c1.id = o1.customer_id
+  where o1.customer_id is null
+
+b. Выбрать имена (name) 5 клиентов, которые сделали больше всего заказов в магазине.
+select c.name from orders o
+left join clients c on c.id = o.customer_id
+group by o.customer_id
+order by count(o.id) desc
+limit 5
+	
+c. Выбрать имена (name) 10 клиентов, которые сделали заказы на наибольшую сумму.
+Выбрать клиентов, которые сделали заказы на наибольшую сумму нет возмодности, т.к. по условию нет данных о суммах заказов, в таком случаи, предполагаю, 
+что все заказы одной суммы.
+select c.name from orders o
+left join clients c on c.id = o.customer_id
+group by o.customer_id
+order by count(o.id) desc
+limit 10
+
+d. Выбрать имена (name) всех товаров, по которым не было доставленных заказов (со статусом “complete”).
+select m.name from orders o
+left join merchandise m on o.item_id = m.id
+where o.status = 'complete'
+group by o.item_id
+
+3. Описать, какие бы вы создали индексы для оптимизации скорости работы запросов из п.2 и почему
+Были созданы простые индексы по первичному ключу во всех таблицах (столбцы id). В таблице orders были добавлены еще индексы по полю - item_id, customer_id, status,
+т.к. по всем этим полям чаще происходит выборка. Если создавать слишокм большое кол-вом индексов, то это замедлит вставку в таблицу, обновление данных в таблице
+и удаление из таблиц, т.к. при редактировании таблиц идет перестроение индексов.
